@@ -1,0 +1,41 @@
+{
+  "Comment": "Dynamic RDS MySQL to S3 Exporter",
+  "StartAt": "RunExportTask",
+  "States": {
+    "RunExportTask": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "LaunchType": "FARGATE",
+        "Cluster": "arn:aws:ecs:us-east-1:337774319478:cluster/ecs-rds-cluster",
+        "TaskDefinition": "arn:aws:ecs:us-east-1:337774319478:task-definition/ecs-rds-exporter-task:14",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": [
+              "subnet-0b019fdbf915e3555",
+              "subnet-05a13ceaf77a5d302"
+            ],
+            "SecurityGroups": [
+              "sg-0acd6c0ec78d5e78c"
+            ],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "rds-exporter-container",
+              "Environment": [
+                {
+                  "Name": "TARGET_DB",
+                  "Value.$": "$.target_db"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "End": true
+    }
+  }
+}
